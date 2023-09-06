@@ -1,0 +1,26 @@
+{
+  "name": "account-statement-mapper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "run": "npx ts-node src/app"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/lodash": "^4.14.197",
+    "@types/node": "^20.5.9",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@types/moment": "^2.13.0",
+    "@types/moment-timezone": "^0.5.30",
+    "@types/papaparse": "^5.3.8",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.43",
+    "papaparse": "^5.4.1"
+  }
+}
