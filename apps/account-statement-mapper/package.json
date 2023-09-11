@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/axios": "^0.14.0",
     "@types/lodash": "^4.14.197",
     "@types/node": "^20.5.9",
     "typescript": "^5.2.2"
@@ -18,9 +19,11 @@
     "@types/moment": "^2.13.0",
     "@types/moment-timezone": "^0.5.30",
     "@types/papaparse": "^5.3.8",
+    "axios": "^1.5.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
-    "papaparse": "^5.4.1"
+    "papaparse": "^5.4.1",
+    "yahoo-finance": "^0.3.8"
   }
 }

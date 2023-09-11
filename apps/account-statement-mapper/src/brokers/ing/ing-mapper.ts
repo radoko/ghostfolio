@@ -4,41 +4,12 @@ import { INGActivity } from "./ing-transaction.model";
 import { MapperService } from "../mapper.service";
 import { CreateAccountDto, CreateOrderDto, ImportDataDto } from "../target.model";
 import moment from 'moment-timezone';
+import { getTicker, TICKERS } from "../tickers";
 
 export class IngMapper extends MapperService<INGActivity> {
 
   static readonly INSTANCE = new IngMapper()
   static readonly NO_LONGER_LISTED = ["ZYWIEC", 'LOTOS', 'KRUSZWICA', 'PGNIG'];
-  static readonly TICKERS: Map<string, string> = new Map([
-    ["LIVECHAT", "LVC.WA"],
-    ["ASSECOPOL", "ACP.WA"],
-    ["ATENDE", "ATD.WA"],
-    ["APATOR", "APT.WA"],
-    ["TOYA", "TOA.WA"],
-    ["IZOSTAL", "IZS.WA"],
-    ["KETY", "KTY.WA"],
-    ["BOGDANKA", "LWB.WA"],
-    ["INSTALKRK", "INK.WA"],
-    ["ATAL", "1AT.WA"],
-    ["ALUMETAL", "AML.WA"],
-    ["PCCROKITA", "PCR.WA"],
-    ["AMICA", "AMC.WA"],
-    ["RAINBOW", "RBW.WA"],
-    ["FAMUR", "GEA.WA"],
-    ["HANDLOWY", "BHW.WA"],
-    ["STALPROFI", "STF.WA"],
-    ["DEBICA", "DBC.WA"],
-    ["WAWEL", "WWL.WA"],
-    ["ASSECOBS", "ABS.WA"],
-    ["DROZAPOL", "DPL.WA"],
-    ["TAURONPE", "TPE.WA"],
-    ["ALIOR", "ALR.WA"],
-    ["SANPL", "SPL.WA"],
-    ["PEKAO", "PEO.WA"],
-    ["CDPROJEKT", "CDR.WA"],
-    ["ALLEGRO", "ALG.WA"],
-    ["MIRBUD", "MRB.WA"],
-  ]);
 
   map(transactions: INGActivity[]): ImportDataDto {
     const account: CreateAccountDto = {
@@ -82,7 +53,7 @@ export class IngMapper extends MapperService<INGActivity> {
           date: moment(activity.date, 'DD-MM-YYYY HH:mm:ss').tz('Europe/Warsaw').toISOString(),
           fee: 0,
           quantity: activity.quantity as number,
-          symbol: this.getTicker(activity),
+          symbol: getTicker(activity),
           type: this.mapIngType(activity.type as "Kupno" | "Sprzeda?"),
           unitPrice: this.getIngUnitPrice(activity.pricePerShare as string)
         }
@@ -94,9 +65,7 @@ export class IngMapper extends MapperService<INGActivity> {
     };
   }
 
-  private getTicker(activity: INGActivity) {
-    return IngMapper.TICKERS.get(activity.ticker) || activity.ticker!.substring(0, 3) + ".WA";
-  }
+
 
   writeResult(result: ImportDataDto) {
     fs.writeFile('dist/ing-target.json', JSON.stringify(result, null, 2), (err) => {

@@ -1,39 +1,36 @@
 import fs from "fs";
-import { RevolutActivity } from "./revolut-transaction.model";
 import { MapperService } from "../mapper.service";
 import { CreateAccountDto, CreateOrderDto, ImportDataDto } from "../target.model";
 import Papa from 'papaparse';
+import moment from "moment-timezone";
+import { EtoroActivity } from "./etoro-transaction.model";
 
-export class RevolutMapper extends MapperService<RevolutActivity> {
+export class EtoroMapper extends MapperService<EtoroActivity> {
 
-  static readonly INSTANCE = new RevolutMapper()
+  static readonly INSTANCE = new EtoroMapper()
 
-  map(transactions: RevolutActivity[]): ImportDataDto {
+  map(transactions: EtoroActivity[]): ImportDataDto {
     const account: CreateAccountDto = {
       "accountType": "SECURITIES",
       "balance": 0,
       "currency": "USD",
-      "id": "3b2ec89f-84ee-43c2-936e-bd16b615bf32",
+      "id": "3b2ec89f-84ee-43c2-936e-bd16b615bf22",
       "isExcluded": false,
-      "name": "Revolut",
+      "name": "Etoro",
       "platformId": null
     }
     const activities: CreateOrderDto[] = transactions
-      // .filter(activity => ["BUY - MARKET", "SELL - MARKET", "DIVIDEND"].includes(activity.Type))
-      // .filter(activity => ["MMM", "C", "INTC", "QCOM", "VZ",
-      //   "META", "T", "RGR", "ASML", "AMZN", "NFLX", "TSLA", "COIN"
-      // ].includes(activity.Ticker))
       .map(activity => {
         return {
           accountId: account.id,
           currency: activity.Currency,
           dataSource: "YAHOO",
-          date: activity.Date,
+          date: moment(activity.Date, 'DD/MM/YYYY HH:mm').tz('Europe/Warsaw').toISOString(),
           fee: 0,
-          quantity: this.getQuantity(activity),
+          quantity: +activity.Quantity,
           symbol: activity.Ticker,
-          type: this.mapType(activity.Type),
-          unitPrice: this.getUnitPrice(activity)
+          type: activity.Type,
+          unitPrice: +activity["Price per share"]
         }
       })
 
@@ -44,7 +41,7 @@ export class RevolutMapper extends MapperService<RevolutActivity> {
   }
 
   writeResult(result: ImportDataDto) {
-    fs.writeFile('dist/revolut.json', JSON.stringify(result, null, 2), (err) => {
+    fs.writeFile('dist/etoro.json', JSON.stringify(result, null, 2), (err) => {
       if (err) {
         console.error('Error writing target.json', err);
         return [];
@@ -54,7 +51,7 @@ export class RevolutMapper extends MapperService<RevolutActivity> {
     });
   }
 
-  readFile(fileName: string): Promise<RevolutActivity[]> {
+  readFile(fileName: string): Promise<EtoroActivity[]> {
     return new Promise((resolve, reject) => {
       fs.readFile(fileName, 'utf8', (err, data) => {
         if (err) {
@@ -62,7 +59,7 @@ export class RevolutMapper extends MapperService<RevolutActivity> {
           return;
         }
 
-        Papa.parse<RevolutActivity>(data, {
+        Papa.parse<EtoroActivity>(data, {
           header: true,
           skipEmptyLines: true,
           complete: (result) => {
@@ -77,16 +74,6 @@ export class RevolutMapper extends MapperService<RevolutActivity> {
     });
   }
 
-  private getUnitPrice(activity: RevolutActivity) {
-    let result = ""
-    if (activity.Type === "DIVIDEND") {
-      result = activity["Total Amount"]
-    } else {
-      result = activity["Price per share"];
-    }
-    return +result.substring(1).replace(',', '');
-  }
-
   private mapType(Type: "BUY - MARKET" | "SELL - MARKET" | "DIVIDEND") {
     switch (Type) {
       case "BUY - MARKET":
@@ -98,10 +85,4 @@ export class RevolutMapper extends MapperService<RevolutActivity> {
     }
   }
 
-  private getQuantity(activity: RevolutActivity) {
-    if (activity.Type === "DIVIDEND") {
-      return 1
-    }
-    return +activity.Quantity;
-  }
 }

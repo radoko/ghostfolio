@@ -5,11 +5,11 @@ export abstract class MapperService<T> {
 
   abstract map(transactions: T[]): ImportDataDto;
 
-  abstract writeResult(result: ImportDataDto): void;
+  abstract writeResult(result: ImportDataDto, targetFileName?: string): void;
 
-  async exec(fileName: string) {
+  async exec(fileName: string, targetFileName?: string) {
     const fileResult = await this.readFile(fileName);
     const importDataDto = this.map(fileResult);
-    this.writeResult(importDataDto);
+    this.writeResult(importDataDto, targetFileName);
   };
 }
